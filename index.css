@@ -1,0 +1,251 @@
+
+@font-face {
+    font-family: "Brill";
+    src: url("./fonts/BrillBold.woff");
+    font-weight: bold;
+}
+
+
+@font-face {
+    font-family: "Brill";
+    src: url("./fonts/BrillItalic.woff");
+    font-style: italic;
+}
+
+
+@font-face {
+    font-family: "Brill";
+    src: url("./fonts/BrillBoldItalic.woff");
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Brill";
+    src: url("./fonts/BrillRoman.woff");
+}
+.region_ul {
+     font-weight: normal;
+     font-size: larger;
+     font-family: 'Baskerville', 'Brill', 'Georgia', 'Lateef', 'Geeza Pro', serif;
+ }
+.region_ul:hover {
+    color:red;
+    cursor:pointer;
+}
+
+.leaflet-label {
+    font: 20px 'Baskerville', 'Brill','Amiri','Lateef', 'Geeza Pro', serif;
+    border : none;
+}
+
+.leaflet-label-click {
+    font: 20px 'Baskerville','Brill','Amiri','Lateef', 'Geeza Pro', serif;
+    font-weight: bold;
+    color: red;
+    border : none;
+}
+.details_text {
+    /*display: inline;*/
+    font-weight: normal;
+    font-size: 12px;
+    text-indent: 0px;
+    font-family: 'Courier New', 'Lucida', sans-serif;
+}
+.details_li {
+    /*display: inline;*/
+    font-weight: bold;
+    text-indent: 0px;
+    font-size: 12px;
+    font-family: 'Courier New', 'Lucida', sans-serif;
+}
+
+.arabic {
+    font-size: 16px;
+    font-family: 'Amiri', 'Lateef', 'Geeza Pro', serif;
+    padding: 0;
+    direction: rtl;
+    text-indent: 10px;
+    margin: 10px 0;
+    display: none;
+}
+
+.arabicInline {
+    font-family: 'Amiri';
+}
+
+.englishInline {
+    font-family: serif;
+}
+
+.arabic_poetry {
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Amiri', 'Lateef', 'Geeza Pro', serif;
+    padding: 0;
+    margin: 0;
+    text-indent: 0;
+    direction: rtl;
+    text-align: center;
+    display: none;
+    color: #b30000;
+}
+
+.reference {
+    display: none;
+    font-weight: normal;
+    margin: 10px 0;
+    font-size: 12px;
+    text-indent: -50px;
+    font-family: 'Baskerville','Brill', 'Georgia', 'Lateef', 'Geeza Pro', serif;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 0px;
+    margin-left: 200px;
+}
+.myLeafletLabelBold {
+    font-size: 15px;
+    color: #b30000;
+}
+
+input[type="text"] {
+    height: 15px;
+    /*padding-bottom: 10px;*/
+    margin:5px;
+    font-family: 'Baskerville', 'Brill', 'Georgia', 'Lateef', 'Geeza Pro', serif;
+    font-size: 18px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    -webkit-border-radius: none;
+    -moz-border-radius: none;
+    -ms-border-radius: none;
+    -o-border-radius: none;
+    border-radius: none;
+    padding: 10px;
+    border: solid 1px gainsboro;
+    -webkit-transition: box-shadow 0.3s, border 0.3s;
+    -moz-transition: box-shadow 0.3s, border 0.3s;
+    -o-transition: box-shadow 0.3s, border 0.3s;
+    transition: box-shadow 0.3s, border 0.3s;
+}
+input[type="text"]:focus {
+    outline: none;
+    border: solid 1px #707070;
+    -webkit-box-shadow: 0 0 5px 1px #969696;
+    -moz-box-shadow: 0 0 5px 1px #969696;
+    box-shadow: 0 0 5px 1px #969696;
+}
+
+input[type="button"] {
+    border: none;
+    /*color: white;*/
+    padding: 10px;
+    margin:5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: 'Baskerville', 'Brill', 'Georgia', 'Lateef', 'Geeza Pro', serif;
+    font-size: 16px;
+    background-color: #e7e7e7; color: black;
+}
+
+.selections .key {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    margin: 0 5px;
+}
+
+.zone1-node {
+    fill: #31a354;
+}
+.zone2-node {
+    fill: #FFD62E;
+}
+.zone3-node {
+    fill: #FF9500;
+}
+.zone4-node {
+    fill: #E80909;
+}
+.zone5-node {
+    fill: #000;
+}
+
+/* ── Upload overlay ── */
+#upload-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+#upload-panel {
+    background: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 6px;
+    max-width: 520px;
+    width: 90%;
+    font-family: 'Baskerville', 'Brill', 'Georgia', serif;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+}
+
+#upload-panel h1 {
+    margin-top: 0;
+    font-size: 1.6rem;
+}
+
+#upload-panel p,
+#upload-panel ul {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.upload-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.6rem 0;
+}
+
+.upload-row label {
+    min-width: 160px;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+#loadDataBtn {
+    margin-top: 1rem;
+    padding: 0.6rem 1.4rem;
+    font-size: 1rem;
+    font-family: 'Baskerville', 'Brill', 'Georgia', serif;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#loadDataBtn:hover {
+    background: #555;
+}
+
+#loadDataBtn:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+#upload-status {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #c00;
+    min-height: 1.2em;
+}
