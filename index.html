@@ -39,11 +39,10 @@
     <div id="upload-panel">
         <h1>al-Ṯurayyā In-Box</h1>
         <p>Upload your data files to load the gazetteer and geospatial model.</p>
-        <p>The three required files are:</p>
         <ul>
-            <li><b>Places</b>: a GeoJSON file with place features (<code>places_new_structure.geojson</code>)</li>
-            <li><b>Routes</b>: a JSON/GeoJSON file with route sections (<code>routes.json</code>)</li>
-            <li><b>Regions</b>: a JSON file with region definitions (<code>regions.json</code>)</li>
+            <li><b>Places</b> <span class="required-badge">required</span>: GeoJSON file with place features (<code>places_new_structure.geojson</code>)</li>
+            <li><b>Routes</b> <span class="optional-badge">optional</span>: JSON/GeoJSON file with route sections (<code>routes.json</code>) — needed for pathfinding and network analysis</li>
+            <li><b>Regions</b> <span class="optional-badge">optional</span>: JSON file with region definitions (<code>regions.json</code>) — colours and names are auto-generated if omitted</li>
         </ul>
         <div class="upload-row">
             <label for="placesFile">Places (GeoJSON):</label>

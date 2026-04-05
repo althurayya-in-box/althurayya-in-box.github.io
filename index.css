@@ -209,6 +209,26 @@ input[type="button"] {
     line-height: 1.5;
 }
 
+.required-badge,
+.optional-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-radius: 3px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.required-badge {
+    background: #c00;
+    color: #fff;
+}
+.optional-badge {
+    background: #888;
+    color: #fff;
+}
+
 .upload-row {
     display: flex;
     align-items: center;

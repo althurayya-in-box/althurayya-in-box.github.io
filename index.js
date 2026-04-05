@@ -105,63 +105,66 @@ function parseJSONFile(file, callback) {
     reader.readAsText(file);
 }
 
+// ── Fetch helpers ─────────────────────────────────────────────────────────────
+
+/*
+ * Fetch a URL and parse it as JSON. Rejects on non-2xx status.
+ */
+function fetchRequired(url) {
+    return fetch(url).then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' loading ' + url);
+        return res.json();
+    });
+}
+
+/*
+ * Fetch a URL and parse it as JSON. Returns null instead of rejecting on
+ * network errors or non-2xx responses — used for optional files.
+ */
+function fetchOptional(url) {
+    return fetch(url)
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .catch(function()   { return null; });
+}
+
+// ── File loading ──────────────────────────────────────────────────────────────
+
 /*
  * Fetch and apply the bundled default dataset from default_data/.
+ * Places is required; routes and regions are loaded if present.
  */
 function loadDefaultFiles() {
     var statusEl = document.getElementById('upload-status');
     statusEl.textContent = 'Loading default data\u2026';
     setUploadButtonsDisabled(true);
 
-    var filePaths = {
-        regions: 'default_data/regions.json',
-        places:  'default_data/places_new_structure.geojson',
-        routes:  'default_data/routes.json'
-    };
-
-    var loaded    = {};
-    var errors    = [];
-    var remaining = Object.keys(filePaths).length;
-
-    Object.keys(filePaths).forEach(function(name) {
-        fetch(filePaths[name])
-            .then(function(res) {
-                if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + filePaths[name]);
-                return res.json();
-            })
-            .then(function(data) { loaded[name] = data; })
-            .catch(function(err) { errors.push(err.message); })
-            .then(function() {
-                remaining--;
-                if (remaining > 0) return;
-                if (errors.length > 0) {
-                    statusEl.textContent = 'Error: ' + errors.join('; ');
-                    setUploadButtonsDisabled(false);
-                    return;
-                }
-                statusEl.textContent = 'Initialising map\u2026';
-                clearMapData();
-                document.getElementById('upload-overlay').style.display = 'none';
-                loadMapData(loaded.regions, loaded.places, loaded.routes);
-            });
+    Promise.all([
+        fetchRequired('default_data/places_new_structure.geojson'),
+        fetchOptional('default_data/routes.json'),
+        fetchOptional('default_data/regions.json')
+    ]).then(function(results) {
+        statusEl.textContent = 'Initialising map\u2026';
+        clearMapData();
+        document.getElementById('upload-overlay').style.display = 'none';
+        loadMapData(results[2], results[0], results[1]);
+    }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        setUploadButtonsDisabled(false);
     });
 }
 
 /*
  * Read user-selected files from the upload panel and apply them.
+ * Only the Places file is required; Routes and Regions are optional.
  */
 function loadUserFiles() {
     var placesFile  = document.getElementById('placesFile').files[0];
     var routesFile  = document.getElementById('routesFile').files[0];
     var regionsFile = document.getElementById('regionsFile').files[0];
 
-    var missing = [];
-    if (!placesFile)  missing.push('Places');
-    if (!routesFile)  missing.push('Routes');
-    if (!regionsFile) missing.push('Regions');
-    if (missing.length > 0) {
+    if (!placesFile) {
         document.getElementById('upload-status').textContent =
-            'Please select the following files: ' + missing.join(', ') + '.';
+            'Please select a Places file to continue.';
         return;
     }
 
@@ -169,14 +172,17 @@ function loadUserFiles() {
     statusEl.textContent = 'Reading files\u2026';
     setUploadButtonsDisabled(true);
 
-    var loaded = {};
-    var errors = [];
+    // Only count the files we actually intend to read
+    var toRead    = 1 + (routesFile ? 1 : 0) + (regionsFile ? 1 : 0);
+    var completed = 0;
+    var loaded    = {};
+    var errors    = [];
 
     function onFileRead(name, err, data) {
         if (err) errors.push(err.message);
         else     loaded[name] = data;
-
-        if (Object.keys(loaded).length + errors.length < 3) return;
+        completed++;
+        if (completed < toRead) return;
 
         if (errors.length > 0) {
             statusEl.textContent = 'Error: ' + errors.join('; ');
@@ -186,12 +192,14 @@ function loadUserFiles() {
         statusEl.textContent = 'Initialising map\u2026';
         clearMapData();
         document.getElementById('upload-overlay').style.display = 'none';
-        loadMapData(loaded.regions, loaded.places, loaded.routes);
+        loadMapData(loaded.regions || null, loaded.places, loaded.routes || null);
     }
 
-    parseJSONFile(regionsFile, function(err, data) { onFileRead('regions', err, data); });
-    parseJSONFile(placesFile,  function(err, data) { onFileRead('places',  err, data); });
-    parseJSONFile(routesFile,  function(err, data) { onFileRead('routes',  err, data); });
+    parseJSONFile(placesFile, function(err, data) { onFileRead('places',  err, data); });
+    if (regionsFile)
+        parseJSONFile(regionsFile, function(err, data) { onFileRead('regions', err, data); });
+    if (routesFile)
+        parseJSONFile(routesFile,  function(err, data) { onFileRead('routes',  err, data); });
 }
 
 function openUploadPanel() {
@@ -228,11 +236,43 @@ function clearMapData() {
     $('#regionDiv').html('<li id="All" class="region_ul" onclick="selectRegion(\'All\')">All</li>');
 }
 
+// Qualitative colour palette used when no regions file is provided
+var REGION_COLOR_PALETTE = [
+    '#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00',
+    '#a65628','#f781bf','#999999','#66c2a5','#fc8d62',
+    '#8da0cb','#e78ac3','#a6d854','#ffd92f','#e5c494',
+    '#b3b3b3','#1b9e77','#d95f02','#7570b3','#e7298a',
+    '#66a61e','#e6ab02','#a6761d','#666666'
+];
+
 /*
- * Initialise the map from the three parsed data objects.
+ * Build a synthetic regions object from the place features.
+ * Each unique region_URI gets an auto-assigned colour; the first place
+ * encountered in that region becomes its visual centre for map panning.
+ */
+function buildRegionsFromPlaces(placesData) {
+    var result   = {};
+    var colorIdx = 0;
+    placesData.features.forEach(function(f) {
+        var uri = f.properties.althurayyaData.region_URI;
+        if (!result[uri]) {
+            result[uri] = {
+                color:         REGION_COLOR_PALETTE[colorIdx++ % REGION_COLOR_PALETTE.length],
+                region_code:   uri,
+                display:       uri,
+                visual_center: f.properties.althurayyaData.URI
+            };
+        }
+    });
+    return result;
+}
+
+/*
+ * Initialise the map from the parsed data objects.
+ * regionsData and routesData may be null; placesData is required.
  */
 function loadMapData(regionsData, placesData, routesData) {
-    regions = regionsData;
+    regions = regionsData || buildRegionsFromPlaces(placesData);
 
     geojson = L.geoJson(placesData, {
         pointToLayer: function(feature, latlng) {
@@ -293,24 +333,26 @@ function loadMapData(regionsData, placesData, routesData) {
 
     buildZoomIndex(markers, TYPE_SIZE);
 
-    var routesGeoJson = L.geoJson(routesData, { onEachFeature: initRouteFeature });
-    init_graph(routeFeatures);
-    dijkstraGraph = buildDijkstraGraph(routeFeatures);
-    routeLayer.addLayer(routesGeoJson).addTo(map);
-    routeLayer.bringToBack();
+    if (routesData) {
+        var routesGeoJson = L.geoJson(routesData, { onEachFeature: initRouteFeature });
+        init_graph(routeFeatures);
+        dijkstraGraph = buildDijkstraGraph(routeFeatures);
+        routeLayer.addLayer(routesGeoJson).addTo(map);
+        routeLayer.bringToBack();
 
-    // Apply region colour to routes that pass through cross-region boundary points
-    Object.keys(crossRegionPoints).forEach(function(rp) {
-        var pts = crossRegionPoints[rp];
-        for (var i = 0; i < pts.length - 1; i++) {
-            for (var j = 1; j < pts.length; j++) {
-                if (pts[i].end === pts[j].end) {
-                    setLineStyle(pts[i].route, regions[pts[i].end]['color'], 2, 1);
-                    setLineStyle(pts[j].route, regions[pts[i].end]['color'], 2, 1);
+        // Apply region colour to routes passing through cross-region boundary points
+        Object.keys(crossRegionPoints).forEach(function(rp) {
+            var pts = crossRegionPoints[rp];
+            for (var i = 0; i < pts.length - 1; i++) {
+                for (var j = 1; j < pts.length; j++) {
+                    if (pts[i].end === pts[j].end) {
+                        setLineStyle(pts[i].route, regions[pts[i].end]['color'], 2, 1);
+                        setLineStyle(pts[j].route, regions[pts[i].end]['color'], 2, 1);
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 }
 
 // ── Map interaction ───────────────────────────────────────────────────────────
@@ -319,9 +361,8 @@ function loadMapData(regionsData, placesData, routesData) {
  * Return the colour for a region, falling back to lightgray for excluded codes.
  */
 function getRegionColor(regionCode, excludedCodes) {
-    return excludedCodes.indexOf(regionCode) === -1
-        ? regions[regionCode]['color']
-        : 'lightgray';
+    if (excludedCodes.indexOf(regionCode) !== -1) return 'lightgray';
+    return (regions[regionCode] && regions[regionCode]['color']) || 'lightgray';
 }
 
 function onMapClick(e) {
