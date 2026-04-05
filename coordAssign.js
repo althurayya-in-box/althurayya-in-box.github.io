@@ -20,7 +20,7 @@ d3.text("Muqaddasi_all_shortest_paths_noDuplicates.txt", function(error, data) {
         .on('click', function() {
             var s = d3.select('#source_select').property('value').split(",")[0];
             var e = d3.select('#dest_select').property('value').split(",")[0];
-            findPathConsideringIntermediates(s, e, "");
+            findAndDisplayPath(s, e, '');
         });
 
     d3.select("#pathsDiv")

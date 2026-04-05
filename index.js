@@ -4,94 +4,97 @@
  * This version accepts user-uploaded data files instead of loading from fixed paths.
  */
 
-var tiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
-    maxZoom: 16
-});
-var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-    mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFzb3VtZWgiLCJhIjoiY2oxdnV0bDRiMDAxZTMzanN3eW02MzZhYyJ9.P6yBKy_GA4EmXkCqc7FEwQ';
+// ── Tile layer definitions ───────────────────────────────────────────────────
+
+var natGeoTiles = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC', maxZoom: 16 }
+);
+
+var mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors, '
+           + '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '
+           + 'Imagery &copy; <a href="https://mapbox.com">Mapbox</a>';
+var mbUrlV4 = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFzb3VtZWgiLCJhIjoiY2oxdnV0bDRiMDAxZTMzanN3eW02MzZhYyJ9.P6yBKy_GA4EmXkCqc7FEwQ';
 
 L.mapbox.accessToken = 'pk.eyJ1IjoibWFzb3VtZWgiLCJhIjoiY2oxdnV0bDRiMDAxZTMzanN3eW02MzZhYyJ9.P6yBKy_GA4EmXkCqc7FEwQ';
 
-var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
-    streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
-    googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    }),
-    googleTerrain = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    }),
-    watercolorlayer = new L.StamenTileLayer("watercolor");
+var googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+});
+var googleTerrain = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+});
+var waterColorLayer = new L.StamenTileLayer('watercolor');
 
-var mbAttr2 = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    mbUrl2 = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+var mbAttr2 = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, '
+            + 'Imagery &copy; <a href="https://www.mapbox.com/">Mapbox</a>';
+var mbUrlV9 = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
-var grayscalev9 = L.tileLayer(mbUrl2, {id: 'mapbox/light-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr2}),
-    streetsv11  = L.tileLayer(mbUrl2, {id: 'mapbox/streets-v11', tileSize: 512, zoomOffset: -1, attribution: mbAttr2});
+var grayscaleLayer = L.tileLayer(mbUrlV9, { id: 'mapbox/light-v9',   tileSize: 512, zoomOffset: -1, attribution: mbAttr2 });
+var streetsLayer   = L.tileLayer(mbUrlV9, { id: 'mapbox/streets-v11', tileSize: 512, zoomOffset: -1, attribution: mbAttr2 });
 
-var min_zoom = 5,
-    max_zoom = 14;
-var prevZoom = min_zoom;
+// ── Map initialisation ───────────────────────────────────────────────────────
 
-var regs = {};
-var markers = {};
-var route_layers = {};
-var all_route_layers = [];
-var index_routes_layers = {};
-var map_region_to_code = {};
-var route_points = {};
-var route_features = [];
-var geojson;
-var auto_list = [];
-var latlngs = [];
-var graph_dijks;
-var prevPath = [];
-var init_lat = 30, init_lon = 42;
-var clicked_lat, clicked_lng;
-var regions;
+var MIN_ZOOM     = 5;
+var MAX_ZOOM     = 14;
+var DEFAULT_LAT  = 30;
+var DEFAULT_LON  = 42;
+var previousZoom = MIN_ZOOM;
 
-var map = L.map('map', {maxZoom: max_zoom}).setView([init_lat, init_lon], min_zoom);
+var map = L.map('map', { maxZoom: MAX_ZOOM }).setView([DEFAULT_LAT, DEFAULT_LON], MIN_ZOOM);
 googleSat.addTo(map);
 
+// ── Application state ────────────────────────────────────────────────────────
+
+var regionPlaces      = {}; // region URI → [place URIs]
+var markers           = {}; // place URI  → Leaflet CircleMarker
+var routeLayersByRegion = {}; // region URI → [route layers]
+var allRouteLayers    = [];
+var routeLayerIndex   = {}; // "start,end" → route layer
+var regionNameToCode  = {};
+var crossRegionPoints = {}; // route-point URI → [{route, end}]
+var routeFeatures     = [];
+var autocompleteList  = [];
+var dijkstraGraph;
+var regions;
+var geojson;
+var routeLayer     = L.featureGroup();
+var activeRegion;
+var clicked_lat, clicked_lng; // last map-click coordinates (used by coordAssign)
+
+// ── Sidebar tooltips ─────────────────────────────────────────────────────────
+
 $(function() {
-    $('#homeTab').tooltip();
-    $('#locTab').tooltip();
-    $('#sourceTab').tooltip();
-    $('#regions').tooltip();
-    $('#search').tooltip();
-    $('#routeSection').tooltip();
+    $('#homeTab, #locTab, #sourceTab, #regions, #search, #routeSection').tooltip();
 });
 
-var routeLayer = L.featureGroup();
-var prev_select_reg = undefined;
+// ── Map event bindings ───────────────────────────────────────────────────────
 
-map.on('click', OnMapClick);
-map.on('zoomend', myzoom);
+map.on('click',   onMapClick);
+map.on('zoomend', onZoomChange);
 
-active_search("#netInput0");
-active_search('#searchInput');
-active_search("#stopInput0");
-active_search("#stopInputDestination");
+// ── Initial search / autocomplete bindings (before data loads) ───────────────
 
-active_autocomp('#netInput0', auto_list, "#networkPane", function(){});
-active_autocomp('#searchInput', auto_list, "#searchPane", function(){});
-active_autocomp('#stopInput0', auto_list, "#pathFindingPane", keepLastStops);
-active_autocomp('#stopInputDestination', auto_list, "#pathFindingPane", keepLastStops);
+bindSearchInput('#netInput0');
+bindSearchInput('#searchInput');
+bindSearchInput('#stopInput0');
+bindSearchInput('#stopInputDestination');
+
+bindAutocomplete('#netInput0',           autocompleteList, '#networkPane',     function() {});
+bindAutocomplete('#searchInput',         autocompleteList, '#searchPane',      function() {});
+bindAutocomplete('#stopInput0',          autocompleteList, '#pathFindingPane', highlightSelectedWaypoints);
+bindAutocomplete('#stopInputDestination',autocompleteList, '#pathFindingPane', highlightSelectedWaypoints);
+
+// ── File loading ─────────────────────────────────────────────────────────────
 
 /*
- * Read a File object and parse its contents as JSON, then invoke callback(parsedData).
+ * Read a File object, parse it as JSON, and call callback(err, data).
  */
-function readJSONFile(file, callback) {
+function parseJSONFile(file, callback) {
     var reader = new FileReader();
     reader.onload = function(e) {
         try {
-            var data = JSON.parse(e.target.result);
-            callback(null, data);
+            callback(null, JSON.parse(e.target.result));
         } catch (err) {
             callback(new Error('Failed to parse ' + file.name + ': ' + err.message), null);
         }
@@ -103,67 +106,51 @@ function readJSONFile(file, callback) {
 }
 
 /*
- * Load the bundled default dataset from the default_data/ folder.
+ * Fetch and apply the bundled default dataset from default_data/.
  */
-function loadDefaultData() {
+function loadDefaultFiles() {
     var statusEl = document.getElementById('upload-status');
     statusEl.textContent = 'Loading default data\u2026';
-    document.getElementById('loadDataBtn').disabled = true;
-    document.getElementById('loadDefaultBtn').disabled = true;
+    setUploadButtonsDisabled(true);
 
-    var files = {
+    var filePaths = {
         regions: 'default_data/regions.json',
         places:  'default_data/places_new_structure.geojson',
         routes:  'default_data/routes.json'
     };
 
-    var loaded = {};
-    var errors = [];
-    var keys = Object.keys(files);
-    var remaining = keys.length;
+    var loaded    = {};
+    var errors    = [];
+    var remaining = Object.keys(filePaths).length;
 
-    keys.forEach(function(name) {
-        fetch(files[name])
+    Object.keys(filePaths).forEach(function(name) {
+        fetch(filePaths[name])
             .then(function(res) {
-                if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + files[name]);
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + filePaths[name]);
                 return res.json();
             })
-            .then(function(data) {
-                loaded[name] = data;
-            })
-            .catch(function(err) {
-                errors.push(err.message);
-            })
+            .then(function(data) { loaded[name] = data; })
+            .catch(function(err) { errors.push(err.message); })
             .then(function() {
                 remaining--;
                 if (remaining > 0) return;
                 if (errors.length > 0) {
                     statusEl.textContent = 'Error: ' + errors.join('; ');
-                    document.getElementById('loadDataBtn').disabled = false;
-                    document.getElementById('loadDefaultBtn').disabled = false;
+                    setUploadButtonsDisabled(false);
                     return;
                 }
                 statusEl.textContent = 'Initialising map\u2026';
-                resetMapState();
+                clearMapData();
                 document.getElementById('upload-overlay').style.display = 'none';
-                initMap(loaded.regions, loaded.places, loaded.routes);
+                loadMapData(loaded.regions, loaded.places, loaded.routes);
             });
     });
 }
 
 /*
- * Show the upload overlay (e.g. when user wants to load new data).
+ * Read user-selected files from the upload panel and apply them.
  */
-function showUploadOverlay() {
-    document.getElementById('upload-overlay').style.display = 'flex';
-    document.getElementById('upload-status').textContent = '';
-}
-
-/*
- * Called when the user clicks "Load Data" on the upload panel.
- * Reads all three uploaded files and initialises the map.
- */
-function loadUploadedData() {
+function loadUserFiles() {
     var placesFile  = document.getElementById('placesFile').files[0];
     var routesFile  = document.getElementById('routesFile').files[0];
     var regionsFile = document.getElementById('regionsFile').files[0];
@@ -172,7 +159,6 @@ function loadUploadedData() {
     if (!placesFile)  missing.push('Places');
     if (!routesFile)  missing.push('Routes');
     if (!regionsFile) missing.push('Regions');
-
     if (missing.length > 0) {
         document.getElementById('upload-status').textContent =
             'Please select the following files: ' + missing.join(', ') + '.';
@@ -181,366 +167,352 @@ function loadUploadedData() {
 
     var statusEl = document.getElementById('upload-status');
     statusEl.textContent = 'Reading files\u2026';
-    document.getElementById('loadDataBtn').disabled = true;
-    document.getElementById('loadDefaultBtn').disabled = true;
+    setUploadButtonsDisabled(true);
 
     var loaded = {};
     var errors = [];
 
     function onFileRead(name, err, data) {
-        if (err) {
-            errors.push(err.message);
-        } else {
-            loaded[name] = data;
+        if (err) errors.push(err.message);
+        else     loaded[name] = data;
+
+        if (Object.keys(loaded).length + errors.length < 3) return;
+
+        if (errors.length > 0) {
+            statusEl.textContent = 'Error: ' + errors.join('; ');
+            setUploadButtonsDisabled(false);
+            return;
         }
-        if (Object.keys(loaded).length + errors.length === 3) {
-            if (errors.length > 0) {
-                statusEl.textContent = 'Error: ' + errors.join('; ');
-                document.getElementById('loadDataBtn').disabled = false;
-                document.getElementById('loadDefaultBtn').disabled = false;
-                return;
-            }
-            statusEl.textContent = 'Initialising map…';
-            // Reset state before (re-)initialising in case data was already loaded.
-            resetMapState();
-            document.getElementById('upload-overlay').style.display = 'none';
-            initMap(loaded.regions, loaded.places, loaded.routes);
-        }
+        statusEl.textContent = 'Initialising map\u2026';
+        clearMapData();
+        document.getElementById('upload-overlay').style.display = 'none';
+        loadMapData(loaded.regions, loaded.places, loaded.routes);
     }
 
-    readJSONFile(regionsFile, function(err, data) { onFileRead('regions', err, data); });
-    readJSONFile(placesFile,  function(err, data) { onFileRead('places',  err, data); });
-    readJSONFile(routesFile,  function(err, data) { onFileRead('routes',  err, data); });
+    parseJSONFile(regionsFile, function(err, data) { onFileRead('regions', err, data); });
+    parseJSONFile(placesFile,  function(err, data) { onFileRead('places',  err, data); });
+    parseJSONFile(routesFile,  function(err, data) { onFileRead('routes',  err, data); });
+}
+
+function openUploadPanel() {
+    document.getElementById('upload-overlay').style.display = 'flex';
+    document.getElementById('upload-status').textContent = '';
+}
+
+function setUploadButtonsDisabled(disabled) {
+    document.getElementById('loadDataBtn').disabled    = disabled;
+    document.getElementById('loadDefaultBtn').disabled = disabled;
+}
+
+// ── Map data lifecycle ────────────────────────────────────────────────────────
+
+/*
+ * Tear down all previously loaded map data so loadMapData() can be called again.
+ */
+function clearMapData() {
+    if (geojson)     { map.removeLayer(geojson); geojson = null; }
+    if (routeLayer)  { map.removeLayer(routeLayer); routeLayer = L.featureGroup(); }
+
+    regionPlaces      = {};
+    markers           = {};
+    routeLayersByRegion = {};
+    allRouteLayers    = [];
+    routeLayerIndex   = {};
+    regionNameToCode  = {};
+    crossRegionPoints = {};
+    routeFeatures     = [];
+    autocompleteList  = [];
+    dijkstraGraph     = null;
+    regions           = null;
+
+    $('#regionDiv').html('<li id="All" class="region_ul" onclick="selectRegion(\'All\')">All</li>');
 }
 
 /*
- * Clear all previously loaded map data so that initMap() can be called again
- * when the user uploads a new dataset.
+ * Initialise the map from the three parsed data objects.
  */
-function resetMapState() {
-    // Remove existing geojson layer
-    if (geojson) {
-        map.removeLayer(geojson);
-        geojson = null;
-    }
-    // Remove existing route layer
-    if (routeLayer) {
-        map.removeLayer(routeLayer);
-        routeLayer = L.featureGroup();
-    }
-    // Clear all data structures
-    regs = {};
-    markers = {};
-    route_layers = {};
-    all_route_layers = [];
-    index_routes_layers = {};
-    map_region_to_code = {};
-    route_points = {};
-    route_features = [];
-    auto_list = [];
-    latlngs = [];
-    graph_dijks = null;
-    prevPath = [];
-    regions = null;
-
-    // Clear the region list in the sidebar (keep the "All" entry)
-    $("#regionDiv").html('<li id="All" class="region_ul" onclick="click_region(\'All\')">All</li>');
-}
-
-/*
- * Initialise the map with the three data objects.
- * This is the core logic extracted from the original nested $.getJSON callbacks.
- */
-function initMap(regionsData, placesData, routesData) {
+function loadMapData(regionsData, placesData, routesData) {
     regions = regionsData;
 
     geojson = L.geoJson(placesData, {
-        pointToLayer: function (feature, latlng) {
-            if (regs[feature.properties.althurayyaData.region_URI] == undefined)
-                regs[feature.properties.althurayyaData.region_URI] = [];
-            regs[feature.properties.althurayyaData.region_URI]
-                .push(feature.properties.althurayyaData.URI);
+        pointToLayer: function(feature, latlng) {
+            var uri = feature.properties.althurayyaData.region_URI;
+            if (!regionPlaces[uri]) regionPlaces[uri] = [];
+            regionPlaces[uri].push(feature.properties.althurayyaData.URI);
 
-            var marker = create_marker(feature, latlng);
-            latlngs.push([latlng['lat'], latlng['lng']]);
-            auto_list.push(
-                [feature.properties.althurayyaData.names.eng.search,
-                    feature.properties.althurayyaData.names.ara.common,
-                    feature.properties.althurayyaData.URI
-                ].join(", "));
+            var marker = createMarker(feature, latlng);
+            autocompleteList.push([
+                feature.properties.althurayyaData.names.eng.search,
+                feature.properties.althurayyaData.names.ara.common,
+                feature.properties.althurayyaData.URI
+            ].join(', '));
 
-            marker.on('click', OnMarkerClick(feature));
-
-            if (marker != null) {
-                return marker;
-            }
+            marker.on('click', createMarkerClickHandler(feature));
+            return marker;
         }
     });
-
     geojson.addTo(map);
 
-    // Rebuild autocomplete lists with the new data
-    active_autocomp('#netInput0', auto_list, "#networkPane", function(){});
-    active_autocomp('#searchInput', auto_list, "#searchPane", function(){});
-    active_autocomp('#stopInput0', auto_list, "#pathFindingPane", keepLastStops);
-    active_autocomp('#stopInputDestination', auto_list, "#pathFindingPane", keepLastStops);
+    // Rebuild autocomplete lists now that data is loaded
+    bindAutocomplete('#netInput0',            autocompleteList, '#networkPane',     function() {});
+    bindAutocomplete('#searchInput',          autocompleteList, '#searchPane',      function() {});
+    bindAutocomplete('#stopInput0',           autocompleteList, '#pathFindingPane', highlightSelectedWaypoints);
+    bindAutocomplete('#stopInputDestination', autocompleteList, '#pathFindingPane', highlightSelectedWaypoints);
 
-    // Sort regions alphabetically and add to the Regions tab
-    Object.keys(regs).sort(function (a, b) {
+    // Populate Regions sidebar tab (alphabetically, excluding NoRegion)
+    Object.keys(regionPlaces).sort(function(a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
-    }).forEach(function (key) {
-        if (key !== "NoRegion") {
-            var func = "click_region(\"" + key + "\");";
-            $("#regionDiv").append("<li id=\'" + key + "\' class='region_ul' onclick=\'" + func + "\';>"
-                + regions[key]['display'] + "</li>");
+    }).forEach(function(key) {
+        if (key !== 'NoRegion') {
+            $('#regionDiv').append(
+                "<li id='" + key + "' class='region_ul'"
+                + " onclick='selectRegion(\"" + key + "\")'>"
+                + regions[key]['display'] + '</li>');
         }
     });
 
-    var cities = new L.LayerGroup();
+    // Add all markers to an overlay layer group
+    var placesGroup = new L.LayerGroup();
     Object.keys(markers).forEach(function(key) {
-        markers[key].addTo(cities);
-        if (marker_properties[key].type == "metropoles") {
+        markers[key].addTo(placesGroup);
+        if (placeProperties[key].type === 'metropoles') {
             markers[key].setLabelNoHide(true);
             markers[key].bringToFront();
         }
     });
 
     var baseLayers = {
-        "Grayscale": grayscalev9,
-        "National Geographic": tiles,
-        "Google Satellite": googleSat,
-        "Google Terrain": googleTerrain,
-        "Water Color": watercolorlayer
+        'Grayscale':          grayscaleLayer,
+        'National Geographic': natGeoTiles,
+        'Google Satellite':   googleSat,
+        'Google Terrain':     googleTerrain,
+        'Water Color':        waterColorLayer
     };
-    var overlays = {
-        "Places": cities
-    };
-    L.control.layers(baseLayers, overlays).addTo(map);
-    var sidebar = L.control.sidebar('sidebar').addTo(map);
+    L.control.layers(baseLayers, { 'Places': placesGroup }).addTo(map);
+    L.control.sidebar('sidebar').addTo(map);
 
-    index_zoom(markers, type_size);
+    buildZoomIndex(markers, TYPE_SIZE);
 
-    var routes = L.geoJson(routesData, {
-        onEachFeature: handle_routes
-    });
-    init_graph(route_features);
-    graph_dijks = createMatrix(route_features);
-    var rl = routeLayer.addLayer(routes);
-    rl.addTo(map);
-    rl.bringToBack();
+    var routesGeoJson = L.geoJson(routesData, { onEachFeature: initRouteFeature });
+    init_graph(routeFeatures);
+    dijkstraGraph = buildDijkstraGraph(routeFeatures);
+    routeLayer.addLayer(routesGeoJson).addTo(map);
+    routeLayer.bringToBack();
 
-    Object.keys(route_points).forEach(function(rp) {
-        for (var i = 0; i < route_points[rp].length - 1; i++) {
-            for (var j = 1; j < route_points[rp].length; j++) {
-                if (route_points[rp][i]["end"] == route_points[rp][j]["end"]) {
-                    customLineStyle(route_points[rp][i]["route"], regions[route_points[rp][i]["end"]]['color'], 2, 1);
-                    customLineStyle(route_points[rp][j]["route"], regions[route_points[rp][i]["end"]]['color'], 2, 1);
+    // Apply region colour to routes that pass through cross-region boundary points
+    Object.keys(crossRegionPoints).forEach(function(rp) {
+        var pts = crossRegionPoints[rp];
+        for (var i = 0; i < pts.length - 1; i++) {
+            for (var j = 1; j < pts.length; j++) {
+                if (pts[i].end === pts[j].end) {
+                    setLineStyle(pts[i].route, regions[pts[i].end]['color'], 2, 1);
+                    setLineStyle(pts[j].route, regions[pts[i].end]['color'], 2, 1);
                 }
             }
         }
     });
 }
 
-/*
- * Set a color for an object excluded from a list
- */
-function setColor(code, toExclude) {
-    if (toExclude.indexOf(code) == -1)
-        return regions[code]['color'];
-    else return "lightgray";
-}
+// ── Map interaction ───────────────────────────────────────────────────────────
 
 /*
- * Click on map
+ * Return the colour for a region, falling back to lightgray for excluded codes.
  */
-function OnMapClick(e) {
-    $("#sidebar-pane").removeClass('active');
-    $(".sidebar-tabs > li").removeClass('active');
-    $("#sidebar").addClass('collapsed');
+function getRegionColor(regionCode, excludedCodes) {
+    return excludedCodes.indexOf(regionCode) === -1
+        ? regions[regionCode]['color']
+        : 'lightgray';
+}
+
+function onMapClick(e) {
+    $('#sidebar-pane').removeClass('active');
+    $('.sidebar-tabs > li').removeClass('active');
+    $('#sidebar').addClass('collapsed');
     clicked_lat = e.latlng.lat;
     clicked_lng = e.latlng.lng;
 }
 
 /*
- * Highlights and changes the color of markers and routes of a region by clicking on a
- * region name.
+ * Highlight markers and routes belonging to `regionKey`, or restore all if "All".
  */
-function click_region(reg) {
-    document.getElementById(reg).style.color = 'red';
-    if (prev_select_reg != undefined)
-        document.getElementById(prev_select_reg).style.color = 'gray';
-    prev_select_reg = reg;
-    if (reg == "All") {
-        map.panTo([30, 42]);
-        Object.keys(marker_properties).forEach(function(key) {
+function selectRegion(regionKey) {
+    document.getElementById(regionKey).style.color = 'red';
+    if (activeRegion !== undefined)
+        document.getElementById(activeRegion).style.color = 'gray';
+    activeRegion = regionKey;
+
+    if (regionKey === 'All') {
+        map.panTo([DEFAULT_LAT, DEFAULT_LON]);
+        Object.keys(placeProperties).forEach(function(key) {
             markers[key].setStyle({
-                fillColor: regions[marker_properties[key].region]['color'],
-                fillOpacity: "1",
+                fillColor:   regions[placeProperties[key].region]['color'],
+                fillOpacity: 1
             });
         });
-        Object.keys(route_layers).forEach(function(key) {
-            route_layers[key].forEach(function (lay) {
-                customLineStyle(lay, regions[key]['color'], 2, 1);
+        Object.keys(routeLayersByRegion).forEach(function(key) {
+            routeLayersByRegion[key].forEach(function(layer) {
+                setLineStyle(layer, regions[key]['color'], 2, 1);
             });
         });
     } else {
-        var tmp = regs[reg];
-        Object.keys(markers).forEach(function (key) {
-            if (tmp.indexOf(key) == -1) {
-                markers[key].setStyle({
-                    fillColor: "gray",
-                    color: "gray"
-                });
-                markers[key].options.zIndexOffset = -1000;
-            } else {
-                markers[key].setStyle({
-                    fillColor: "red",
-                    color: "red"
-                });
-                markers[key].options.zIndexOffset = 1000;
-            }
+        var placesInRegion = regionPlaces[regionKey];
+        Object.keys(markers).forEach(function(key) {
+            var inRegion = placesInRegion.indexOf(key) !== -1;
+            markers[key].setStyle({
+                fillColor: inRegion ? 'red'  : 'gray',
+                color:     inRegion ? 'red'  : 'gray'
+            });
+            markers[key].options.zIndexOffset = inRegion ? 1000 : -1000;
         });
-        all_route_layers.forEach(function(lay) {
-            customLineStyle(lay, "gray", 2, 0.8);
-        });
-        if (route_layers[reg] != undefined) {
-            route_layers[reg].forEach(function (lay) {
-                customLineStyle(lay, 'red', 3, 1);
+        allRouteLayers.forEach(function(layer) { setLineStyle(layer, 'gray', 2, 0.8); });
+        if (routeLayersByRegion[regionKey]) {
+            routeLayersByRegion[regionKey].forEach(function(layer) {
+                setLineStyle(layer, 'red', 3, 1);
             });
         }
-        map.panTo(markers[regions[reg]['visual_center']].getLatLng());
+        map.panTo(markers[regions[regionKey]['visual_center']].getLatLng());
     }
 }
 
-function click_on_list(id) {
-    $('#' + id + "text").children().toggle();
-    $('#' + id + "ref").toggle();
+/*
+ * Toggle the text and reference sections of a primary/secondary source entry.
+ */
+function toggleSourceDetails(id) {
+    $('#' + id + 'text').children().toggle();
+    $('#' + id + 'ref').toggle();
 }
 
-function findPathConsideringIntermediates(start, end, stopInputsId) {
-    var selections = selectedTypes('itinerary-options');
-    $("#dist_div").html("");
-    $("#path_dist_header").css("display", "none");
-    repaintMarkers();
-    repaintPaths();
-    var itinerary = makeItinerary(start, end, stopInputsId);
-    var distances = findItinerary(itinerary, selections);
-    var short_distance = distances[0];
-    var day_distance = distances[1];
-    var int_direct_dist = calcDirectDistance(itinerary[0], itinerary[itinerary.length - 1]);
-    $("#path_dist_header").css("display", "block");
-    displayDistance($("#dist_div"), int_direct_dist, int_direct_dist, "Direct");
-    if (selections.indexOf(itin_opts[0]) != -1) {
-        displayDistance($("#dist_div"), short_distance, int_direct_dist, itin_opts[0]);
-    }
-    if (selections.indexOf(itin_opts[1]) != -1) {
-        displayDistance($("#dist_div"), day_distance, int_direct_dist, itin_opts[1]);
-    }
+// ── Pathfinding ───────────────────────────────────────────────────────────────
+
+function findAndDisplayPath(start, end, stopInputsId) {
+    var selections = getSelectedPathTypes('itinerary-options');
+    $('#dist_div').html('');
+    $('#path_dist_header').css('display', 'none');
+    dimAllMarkers();
+    dimAllRoutes();
+
+    var itinerary   = buildItinerary(start, end, stopInputsId);
+    var distances   = computeItineraryDistances(itinerary, selections);
+    var directDist  = computeDirectDistance(itinerary[0], itinerary[itinerary.length - 1]);
+
+    $('#path_dist_header').css('display', 'block');
+    appendDistanceRow($('#dist_div'), directDist, directDist, 'Direct');
+    if (selections.indexOf(PATH_TYPES[0]) !== -1)
+        appendDistanceRow($('#dist_div'), distances[0], directDist, PATH_TYPES[0]);
+    if (selections.indexOf(PATH_TYPES[1]) !== -1)
+        appendDistanceRow($('#dist_div'), distances[1], directDist, PATH_TYPES[1]);
 }
 
-function makeItinerary(source, target, stopInputsId) {
-    var stops = [];
-    stops.push(source);
-    $('Input[id^=' + stopInputsId + ']').each(function() {
-        var stopInputValue = $(this).val();
-        if (stopInputValue.indexOf(",") != -1) {
-            stops.push(stopInputValue);
-        }
+/*
+ * Collect all stop inputs into an ordered array: [source, via..., destination].
+ */
+function buildItinerary(source, target, stopInputsId) {
+    var stops = [source];
+    $('input[id^=' + stopInputsId + ']').each(function() {
+        var val = $(this).val();
+        if (val.indexOf(',') !== -1) stops.push(val);
     });
     stops.push(target);
     return stops;
 }
 
-function findItinerary(stops, selections) {
-    var short_distance = 0, day_distance = 0;
-    var s, t;
+/*
+ * Walk each consecutive pair of stops, compute paths, and return
+ * [totalShortestMetres, totalOptimalMetres].
+ */
+function computeItineraryDistances(stops, selections) {
+    var shortDist = 0;
+    var optDist   = 0;
     for (var i = 0; i < stops.length - 1; i++) {
-        s = stops[i];
-        t = stops[i + 1];
-        if (selections.indexOf(itin_opts[0]) != -1) {
-            var short_path = findPath(s, t, itin_opts[0]);
-            short_distance += displayPathControl(short_path, "red");
+        if (selections.indexOf(PATH_TYPES[0]) !== -1) {
+            shortDist += highlightPathSegments(computePath(stops[i], stops[i + 1], PATH_TYPES[0]), 'red');
         }
-        if (selections.indexOf(itin_opts[1]) != -1) {
-            var day_path = findPath(s, t, itin_opts[1]);
-            day_distance += displayPathControl(day_path, "green");
+        if (selections.indexOf(PATH_TYPES[1]) !== -1) {
+            optDist   += highlightPathSegments(computePath(stops[i], stops[i + 1], PATH_TYPES[1]), 'green');
         }
     }
-    return [short_distance, day_distance];
+    return [shortDist, optDist];
 }
 
-function findPath(start, end, pathType) {
-    var shortPath, dayPath;
-    if (start == null || end == null) return;
-    var startUri = start.substring(start.lastIndexOf(",") + 1).trim();
-    var endUri = end.substring(end.lastIndexOf(",") + 1).trim();
-    if (pathType == itin_opts[0]) {
-        shortPath = graph_dijks.findShortestPath(startUri, endUri);
-        if (shortPath != null)
-            return shortPath;
+/*
+ * Find the path between two autocomplete strings using the given algorithm.
+ * PATH_TYPES[0] ('Shortest') uses the Dijkstra distance graph.
+ * PATH_TYPES[1] ('Optimal')  uses the day-travel weighted graph.
+ */
+function computePath(start, end, pathType) {
+    if (!start || !end) return [];
+    var startUri = start.substring(start.lastIndexOf(',') + 1).trim();
+    var endUri   = end.substring(end.lastIndexOf(',') + 1).trim();
+
+    if (pathType === PATH_TYPES[0]) {
+        return dijkstraGraph.findShortestPath(startUri, endUri) || [];
     }
-    if (pathType == itin_opts[1]) {
-        dayPath = shortestPath(graph.getNode(startUri), graph.getNode(endUri), 'd');
-        if (dayPath != null)
-            return dayPath;
+    if (pathType === PATH_TYPES[1]) {
+        return shortestPath(travelGraph.getNode(startUri), travelGraph.getNode(endUri), 'd') || [];
+    }
+    return [];
+}
+
+/*
+ * Append a distance summary row (days of travel + km) to `container`.
+ */
+function appendDistanceRow(container, dist, directDist, label) {
+    var id     = label.replace(/ /g, '_').toLowerCase();
+    var days   = parseInt((dist / DAY).toFixed(), 10).toLocaleString('en');
+    var km     = parseInt((dist / 1000).toFixed(), 10).toLocaleString('en');
+    container.append(
+        "<p id='" + id + "'>" + label
+        + " distance: <b>" + days + "</b> days of travel, <b>" + km + "</b> km</p>");
+
+    if (label !== 'Direct') {
+        var avgDist = dist === 0 ? directDist : (dist + directDist) / 2;
+        var avgKm   = parseInt((avgDist / 1000).toFixed(), 10).toLocaleString('en');
+        container.append(
+            "<p style='padding-left:10px;' id='avg_" + id + "'>Average " + label.toLowerCase()
+            + " distance: <b>" + days + "</b> days of travel, <b>" + avgKm + "</b> km</p>");
     }
 }
 
-function displayDistance(container, dist, direct_dist, textValue) {
-    var tmpTextValue = textValue.replace(/ /g, "_").toLowerCase();
-    var avg_dist = (dist == 0) ? direct_dist : (dist + direct_dist) / 2;
-    var elem_km = "<p id='" + tmpTextValue + "'>" + textValue + " distance: <a style='font-weight:bold;'>"
-        + parseInt((dist / DAY).toFixed()).toLocaleString('en') +
-        " </a> days of travel, <a style='font-weight:bold;'>" +
-        parseInt((dist / 1000).toFixed()).toLocaleString('en') + "</a> km</p>";
-    container.append(elem_km);
-    if (textValue != "Direct") {
-        var avg_elem = "<p style='padding-left:10px;' id='avg_" + tmpTextValue + "'>Average " + textValue.toLowerCase()
-            + " distance: <a style='font-weight:bold;'>" + parseInt((dist / DAY).toFixed()).toLocaleString('en') +
-            " </a> days of travel, <a style='font-weight:bold;'>"
-            + parseInt((avg_dist / 1000).toFixed()).toLocaleString('en') + "</a> km</p>";
-        container.append(avg_elem);
-    }
-}
+// ── Network analysis ──────────────────────────────────────────────────────────
 
-function findNetwork() {
-    repaintMap();
-    var map_zone_all_sites = {};
-    $('Input[id^="netInput"]').each(function() {
-        var start = $(this).val().split(',');
-        var sourceID = start[start.length - 1].trim();
-        var s = graph.getNode(sourceID);
-        var distances = shortestPath(s, s, 'n');
-        var multiplier = $("#multiSelect").val();
-        var network = getNetwork(distances, multiplier);
-        Object.keys(network).forEach(function(zone) {
-            var zone_trim = zone.replace(/\D/g, '').trim();
-            network[zone].forEach(function(uri) {
-                if (map_zone_all_sites[uri] == undefined)
-                    map_zone_all_sites[uri] = zone_trim;
+function computeAndDisplayNetwork() {
+    dimMap();
+    var siteZones = {}; // place URI → nearest zone number
+
+    $('input[id^="netInput"]').each(function() {
+        var parts    = $(this).val().split(',');
+        var sourceId = parts[parts.length - 1].trim();
+        var node     = travelGraph.getNode(sourceId);
+        var distances = shortestPath(node, node, 'n');
+        var days      = parseInt($('#multiSelect').val(), 10);
+        var network   = getNetwork(distances, days);
+
+        network.keys().forEach(function(zone) {
+            var zoneNum = parseInt(zone.replace(/\D/g, ''), 10);
+            network.get(zone).forEach(function(uri) {
+                if (siteZones[uri] === undefined)
+                    siteZones[uri] = zoneNum;
                 else
-                    map_zone_all_sites[uri] = Math.min(map_zone_all_sites[uri], zone_trim);
+                    siteZones[uri] = Math.min(siteZones[uri], zoneNum);
             });
         });
     });
 
-    var color = d3.scale.linear()
+    var zoneColor = d3.scale.linear()
         .domain([1, 2, 3, 4, 5])
-        .range(["#E84946", "#FF9500", "#FFD62E", "#6CA376", "gray"]);
+        .range(['#E84946', '#FF9500', '#FFD62E', '#6CA376', 'gray']);
 
     if ($('#unreachable_checkbox').is(':checked')) {
-        Object.keys(markers).forEach(function (key) {
-            customMarkerStyle(markers[key], "black", 1);
+        Object.keys(markers).forEach(function(key) {
+            setMarkerStyle(markers[key], 'black', 1);
         });
     }
-    Object.keys(map_zone_all_sites).forEach(function (uri) {
-        customMarkerStyle(markers[uri], color(map_zone_all_sites[uri]), 1);
+    Object.keys(siteZones).forEach(function(uri) {
+        setMarkerStyle(markers[uri], zoneColor(siteZones[uri]), 1);
     });
-    Object.keys(index_routes_layers).forEach(function (r) {
-        var s = r.split(",")[0];
-        var e = r.split(",")[1];
-        if (map_zone_all_sites[s] == 1 &&
-            map_zone_all_sites[e] == 1)
-            customLineStyle(index_routes_layers[r], "red", 3, 1);
+    Object.keys(routeLayerIndex).forEach(function(edge) {
+        var parts = edge.split(',');
+        if (siteZones[parts[0]] === 1 && siteZones[parts[1]] === 1)
+            setLineStyle(routeLayerIndex[edge], 'red', 3, 1);
     });
 }

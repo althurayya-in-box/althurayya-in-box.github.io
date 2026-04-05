@@ -2,35 +2,32 @@
 <html>
 <head>
     <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
-    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.0/mapbox.js'></script>
-    <script type="text/javascript" src="https://fungdavis.github.io/fungHGR/js/leaflet-sidebar.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.0/mapbox.js"></script>
+    <script src="https://fungdavis.github.io/fungHGR/js/leaflet-sidebar.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/stefanocudini/leaflet-search@master/src/leaflet-search.js"></script>
-    <script type="text/javascript" src="d3.v3.min.js" charset="utf-8"></script>
+    <script src="d3.v3.min.js" charset="utf-8"></script>
     <script src="https://cdn.jsdelivr.net/gh/Leaflet/Leaflet.label@master/dist/leaflet.label.js"></script>
-    <script type="text/javascript" src="data-structures-1.4.2.min.js"></script>
+    <script src="data-structures-1.4.2.min.js"></script>
     <script src="global_var.js"></script>
-    <script type="text/javascript" src="graph.js"></script>
-    <script type="text/javascript" src="dijkstra.js"></script>
-    <script type="text/javascript" src="helper.js"></script>
-    <script type="text/javascript" src="tile.stamen.js"></script>
+    <script src="graph.js"></script>
+    <script src="dijkstra.js"></script>
+    <script src="helper.js"></script>
+    <script src="tile.stamen.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Leaflet/Leaflet.label@master/dist/leaflet.label.css"/>
-    <!--Leaflet CSS-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
-    <link rel="stylesheet" type="text/css" href="css/leaflet_test_style.css">
-    <link rel="stylesheet" type="text/css" href="css/leaflet-sidebar.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/stefanocudini/leaflet-search@master/src/leaflet-search.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css"/>
+    <link rel="stylesheet" href="css/leaflet_test_style.css">
+    <link rel="stylesheet" href="css/leaflet-sidebar.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/stefanocudini/leaflet-search@master/src/leaflet-search.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
-    <!--Custom Fonts-->
-    <link href='https://fonts.googleapis.com/css?family=Playfair+Display:400,400italic&amp;subset=cyrillic,latin'
-          rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,400italic&amp;subset=cyrillic,latin" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
-    <link href='https://fonts.googleapis.com/earlyaccess/amiri.css' rel='stylesheet' type='text/css'>
-
+    <link href="https://fonts.googleapis.com/earlyaccess/amiri.css" rel="stylesheet">
     <link rel="stylesheet" href="index.css"/>
-    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.0/mapbox.css' rel='stylesheet' />
+    <link href="https://api.tiles.mapbox.com/mapbox.js/v2.1.0/mapbox.css" rel="stylesheet"/>
+
     <title>al-Ṯurayyā In-Box</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,8 +58,8 @@
             <input type="file" id="regionsFile" accept=".json">
         </div>
         <div class="upload-actions">
-            <button id="loadDataBtn" onclick="loadUploadedData()">Load Data</button>
-            <button id="loadDefaultBtn" onclick="loadDefaultData()">Use Default Data</button>
+            <button id="loadDataBtn" onclick="loadUserFiles()">Load Data</button>
+            <button id="loadDefaultBtn" onclick="loadDefaultFiles()">Use Default Data</button>
         </div>
         <p id="upload-status"></p>
     </div>
@@ -77,7 +74,7 @@
         <li id="search"><a href="#searchPane" role="tab" title="Search"><i class="fa fa-search"></i></a></li>
         <li id="routeSection"><a href="#routeSectionPane" role="tab" title="Routes"><i class="fa fa-object-ungroup"></i></a></li>
         <li id="pathFinding"><a href="#pathFindingPane" role="tab" title="Path Finding"><i class="fa fa-arrow-right"></i></a></li>
-        <li id="network"><a href="#networkPane" role="tab" title="Network"><i class="fa fa-bullseye "></i></a></li>
+        <li id="network"><a href="#networkPane" role="tab" title="Network"><i class="fa fa-bullseye"></i></a></li>
         <li id="assignCoord"><a href="#assignCoordPane" role="tab" title="Assign Coordinate"><i class="fa fa-map-pin"></i></a></li>
     </ul>
     <div class="sidebar-content">
@@ -87,142 +84,121 @@
             <p>This is the <b>in-box</b> version of the al-Ṯurayyā project. Unlike the main project which loads its own data, this version allows you to <b>upload your own data files</b> and explore them with the same gazetteer and geospatial tools.</p>
 
             <p>To load new data, click the <i class="fa fa-upload"></i> button below.</p>
-            <p><button onclick="showUploadOverlay()"><i class="fa fa-upload"></i> Upload New Data</button></p>
+            <p><button onclick="openUploadPanel()"><i class="fa fa-upload"></i> Upload New Data</button></p>
 
             <p><b>Suggested citation:</b> Seydi, Masoumeh, and Maxim Romanov. <i>al-Ṯurayyā Project: a gazetteer and a geospatial model of the early Islamic World.</i> (Based on: Georgette Cornu's <i>Atlas du monde arabo-islamique à l'époque classique: IXe-Xe siècles</i>, Leiden: Brill, 1983). [<a href="https://github.com/althurayya/althurayya.github.io/">https://althurayya.github.io/</a>], 2022—.</p>
 
-            <p><font class="fa fa-map-marker"></font> is the 'Technical information' of a selected toponym (URI, coord_certainty, language, names, region_URI, source, top_type);</p>
+            <p><i class="fa fa-map-marker"></i> Technical information of a selected toponym (URI, coord_certainty, language, names, region_URI, source, top_type).</p>
+            <p><i class="fa fa-book"></i> Description(s) of a selected toponym from primary sources.</p>
+            <p><i class="fa fa-search"></i> Search panel — search by Arabic name or simplified transliteration (LOC scheme).</p>
+            <p><i class="fa fa-globe"></i> Maps of provinces, colour-coded by region.</p>
+            <p><i class="fa fa-object-ungroup"></i> Technical information on route sections.</p>
+            <p><i class="fa fa-arrow-right"></i> Pathfinding: model paths between two or more locations using Dijkstra's algorithm.</p>
+            <p><i class="fa fa-bullseye"></i> Network: model settlements reachable from a selected point within N days of travel.</p>
 
-            <p><font class="fa fa-book"></font> is the description(s) of a selected toponym from primary sources.</p>
-
-            <p><font class="fa fa-search"></font> Search panel. Search for Arabic names or simplified transliteration (LOC transliteration scheme).</p>
-
-            <p><font class="fa fa-globe"></font> The maps of provinces, color-coded by region.</p>
-
-            <p><font class="fa fa-object-ungroup"></font> Technical information on route sections.</p>
-
-            <p><font class="fa fa-arrow-right"></font> Pathfinding: model paths between two or more locations using Dijkstra's algorithm.</p>
-
-            <p><font class="fa fa-bullseye "></font> Network: model settlements reachable from a selected point within N days of travel.</p>
-
-            <h2>Credits and Acknowledgments:</h2>
-            <p>
-            <b>Current team</b>: Masoumeh Seydi (Aga Khan University, ISMC—London) and Maxim Romanov (Universität Hamburg, Asien-Afrika-Institut).
-            </p>
+            <h2>Credits and Acknowledgments</h2>
+            <p><b>Current team</b>: Masoumeh Seydi (Aga Khan University, ISMC—London) and Maxim Romanov (Universität Hamburg, Asien-Afrika-Institut).</p>
             <p><b>Open Data:</b> All data is available on <a href="https://github.com/althurayya/althurayya.github.io/">GitHub</a>.</p>
         </div>
+
         <div class="sidebar-pane" id="location">
             <h1 id="locTitle">Location</h1>
             <h2 id="admin1"></h2>
             <p id="initDesc">Click on a map marker to get information on a place.</p>
             <h3 id="engSources"></h3>
             <div id="engSourcesDiv"></div>
-            <div id="otherSources" style="display: none">Other references:
-                <li>
-                    <a id="encyIran" href="#">Encyclopaedia Iranica</a>
-                </li>
-                <li>
-                    <a id="pleides" href="#">Pleiades</a>
-                </li>
-                <li>
-                    <a id="wikipedia" href="#">Wikipedia</a>
-                </li>
+            <div id="otherSources" style="display:none">Other references:
+                <li><a id="encyIran" href="#">Encyclopaedia Iranica</a></li>
+                <li><a id="pleides"  href="#">Pleiades</a></li>
+                <li><a id="wikipedia" href="#">Wikipedia</a></li>
             </div>
-            <p id="goToPrimSource" style="display: none">Primary sources: see the next tab</p>
+            <p id="goToPrimSource" style="display:none">Primary sources: see the next tab</p>
             <h3 id="techInfo"></h3>
-            <div id="cornuDetails" style="display: none">
-                <br>
-            </div>
+            <div id="cornuDetails" style="display:none"><br></div>
         </div>
+
         <div class="sidebar-pane" id="source">
             <h1 id="sourceTitle">Sources</h1>
             <div id="sources"></div>
             <p id="initSourceDesc">Click on a map marker to get their descriptions from primary sources.</p>
         </div>
+
         <div class="sidebar-pane" id="regionPane">
             <h1 id="regionList">Regions:</h1>
             <ul id="regionDiv">
-                <li id="All" class="region_ul" onclick="click_region('All')">All</li>
+                <li id="All" class="region_ul" onclick="selectRegion('All')">All</li>
             </ul>
         </div>
+
         <div class="sidebar-pane" id="searchPane">
             <h1>Search Toponym</h1>
-                    <input id="searchInput" type="text" placeholder="Search toponym..."
-                            style="z-index: 99;" autocomplete="on"/>
+            <input id="searchInput" type="text" placeholder="Search toponym..."
+                   style="z-index:99;" autocomplete="on"/>
         </div>
+
         <div class="sidebar-pane" id="routeSectionPane">
             <h1 id="routeTitle">Route Sections</h1>
             <h2 id="admin2"></h2>
-            <p id="initRouteDesc">Clicking on a route section will display technical information on that route section.</p>
-            <h3 id="routeDetails">
-                <br>
-            </h3>
+            <p id="initRouteDesc">Click on a route section to display its technical information.</p>
+            <h3 id="routeDetails"><br></h3>
         </div>
+
         <div class="sidebar-pane" id="pathFindingPane">
             <h1>Pathfinding</h1>
-            <div id="pathInputs" style="display: inline-block;">
-                <label>
-                    Source:
-                </label>
+            <div id="pathInputs" style="display:inline-block;">
+                <label>Source:</label>
                 <div id="stopDiv0">
-                     <input id="stopInput0" type="text" placeholder="Source..."
-                           style="z-index: 99; " autocomplete="on"/>
-
-                     <input type="button" id="addStop0"
-                        style="top: 3px;margin-left: 15px;padding: 5px;"
-                        title="Add intermediate stop "
-                        onclick="addStop(this.id)" value="+" />
+                    <input id="stopInput0" type="text" placeholder="Source..."
+                           style="z-index:99;" autocomplete="on"/>
+                    <input type="button" id="addStop0"
+                           style="top:3px;margin-left:15px;padding:5px;"
+                           title="Add intermediate stop"
+                           onclick="addDynamicInput('pathfinding', this.id, 10)" value="+"/>
                 </div>
                 <br>
-                <div style="display: block;">
-                    <label id="destination">
-                        Destination:
-                    </label>
+                <div style="display:block;">
+                    <label id="destination">Destination:</label>
                     <input id="stopInputDestination" type="text" placeholder="Destination..."
-                           style="z-index: 99;display: block;" autocomplete="on"/>
-                        <br>
+                           style="z-index:99;display:block;" autocomplete="on"/>
+                    <br>
                 </div>
             </div>
             <div class="selections">
                 <div id="itinerary-options"></div>
                 <br>
             </div>
-            <div style="bottom: 10px">
-                <input type="button" style="top: 3px;"
-                       onclick="findPathConsideringIntermediates(
-                                document.getElementById('stopInput0').value,
-                                document.getElementById('stopInputDestination').value,
-                                'stopInput')"
+            <div style="bottom:10px">
+                <input type="button" style="top:3px;"
+                       onclick="findAndDisplayPath(
+                           document.getElementById('stopInput0').value,
+                           document.getElementById('stopInputDestination').value,
+                           'stopInput')"
                        value="Find Path!"/>
-                <p>
-                <b>NB:</b> The <i>shortest</i> option generates the shortest path in the network, using Dijkstra algorithm;
-                the <i>optimal</i> path tries to find the shortest path with the highest number of stations and settlements along the way (under the assumption that such paths are safer).
-                </p>
+                <p><b>NB:</b> The <i>shortest</i> option generates the shortest path in the network using Dijkstra's algorithm; the <i>optimal</i> path finds the shortest route with the highest number of stations and settlements (assumed to be safer).</p>
             </div>
-            <h2 id="path_dist_header" style="display: none;">Path distances:</h2>
+            <h2 id="path_dist_header" style="display:none;">Path distances:</h2>
             <div id="dist_div"></div>
         </div>
+
         <div class="sidebar-pane" id="networkPane">
             <h1>Network</h1>
             <label>Starting Point:</label>
             <div id="netDiv0">
                 <input id="netInput0" type="text" placeholder="Start Network..."
-                       style="z-index: 99; " autocomplete="on"/>
-
+                       style="z-index:99;" autocomplete="on"/>
                 <input type="button" id="addNet0"
-                       style="top: 3px;margin-left: 15px;padding: 5px;"
-                       title="Add new site for network flood"
-                       onclick="addNet(this.id)" value="+" />
+                       style="top:3px;margin-left:15px;padding:5px;"
+                       title="Add another starting point"
+                       onclick="addDynamicInput('network', this.id, 2)" value="+"/>
             </div>
             <br>
-
-            <label style="display: block;padding-left: 30px">
+            <label style="display:block;padding-left:30px">
                 <input type="checkbox" id="unreachable_checkbox" value="unreachable">
-                Show Unreachable Sites:
+                Show Unreachable Sites
             </label>
             <br>
             <label>Extent of the network<br>(in days of travel, ~30 km):</label>
-            <select id="multiSelect" style="margin: 5px">
+            <select id="multiSelect" style="margin:5px">
                 <option value="1">1</option><option value="2">2</option>
                 <option value="3">3</option><option value="4">4</option>
                 <option value="5">5</option><option value="6">6</option>
@@ -240,36 +216,37 @@
                 <option value="29">29</option><option value="30">30</option>
             </select>
             <br><br>
-            <input type="button" style="top: 3px;"
-                   onclick="findNetwork()"
-                   value="Click to Model the Network"/>
+            <input type="button" style="top:3px;"
+                   onclick="computeAndDisplayNetwork()"
+                   value="Model the Network"/>
             <br>
-            <input type="button" style="top: 3px;"
-                   onclick="resetMap()"
-                   value="Click to Reset the Map"/>
+            <input type="button" style="top:3px;"
+                   onclick="resetMapView()"
+                   value="Reset the Map"/>
         </div>
+
         <div class="sidebar-pane" id="assignCoordPane">
             <h1 id="pathsList">Paths (for research):</h1>
             <div id="select_last_path">
-                <label style="display: block">Path index:</label>
-                <input id="path_index" type="text" style="display: inline" value="0"/>
+                <label style="display:block">Path index:</label>
+                <input id="path_index" type="text" style="display:inline" value="0"/>
                 <input type="button" id="listPath_btn" value="List the path!"/>
             </div>
-            <div id="pathsDiv" style="display: none"></div>
+            <div id="pathsDiv" style="display:none"></div>
             <input type="button" id="saveToFile_btn" onclick="saveNewUrisToFile()"
-                   style="display: none" value="Save URIs to file!"/>
+                   style="display:none" value="Save URIs to file!"/>
         </div>
     </div>
 </div>
+
 <div id="map" class="sidebar-map"></div>
-<!--Local js files of althurayya-->
+
+<!-- Local scripts -->
 <script src="myzoom.js"></script>
 <script src="handle_marker.js"></script>
 <script src="handle_routes.js"></script>
 <script src="search_toponym.js"></script>
-<script src="addPlace.js"></script>
-<script src="addNetwork.js"></script>
-<script src="addInput.js"></script>
+<script src="inputs.js"></script>
 <script src="index.js"></script>
 <script src="HelpersForSelectionsUI.js"></script>
 <script src="coordAssign.js"></script>

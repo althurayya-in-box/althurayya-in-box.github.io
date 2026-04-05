@@ -1,39 +1,37 @@
-/**
- * Created by rostam on 31.10.16.
+var PATH_TYPES  = ['Shortest', 'Optimal'];
+var PATH_COLORS = {};
+PATH_COLORS[PATH_TYPES[0]] = '#f00';
+PATH_COLORS[PATH_TYPES[1]] = '#345C1D';
+
+/*
+ * Render a checkbox row for each path type into the given container selector.
+ * All types are checked by default.
  */
-var pathColors = {};
-var itin_opts = ['Shortest', 'Optimal'];
-var pathTypes = d3.set(itin_opts); // can add back 'Through Centers' eventually..
-var pathInitialSelections = d3.set(itin_opts);
-pathColors[itin_opts[0]] = '#f00';
-pathColors[itin_opts[1]] = '#345C1D';
+function initPathTypeSelector(containerSelector) {
+    var labels = d3.select(containerSelector).selectAll('input')
+        .data(PATH_TYPES)
+        .enter().append('label');
 
-function selectionsUI(identifier, initialSelections, colors) {
-    var space = d3.select(identifier).selectAll('input')
-        .data(pathTypes.values())
-        .enter().append("label");
-
-    space.append("input")
+    labels.append('input')
         .attr('type', 'checkbox')
-        .property('checked', function(d) {
-            return initialSelections === undefined || initialSelections.has(d)
-        })
-        .attr("value", function(d) { return d });
+        .property('checked', true)
+        .attr('value', function(d) { return d; });
 
-    space.append("span")
+    labels.append('span')
         .attr('class', 'key')
-        .style('background-color', function(d) { return colors[d] });
+        .style('background-color', function(d) { return PATH_COLORS[d]; });
 
-    space.append("span")
-        .text(function(d) { return d })
-        .attr("class", "english");
+    labels.append('span')
+        .text(function(d) { return d; })
+        .attr('class', 'english');
 }
-selectionsUI('#itinerary-options', pathInitialSelections, pathColors);
+initPathTypeSelector('#itinerary-options');
 
-var selectedTypes = function(identifier) {
-    return d3.selectAll('#' + identifier + ' input[type=checkbox]')[0].filter(function(elem) {
-        return elem.checked;
-    }).map(function(elem) {
-        return elem.value;
-    })
-};
+/*
+ * Return the values of all checked path-type checkboxes in the given container.
+ */
+function getSelectedPathTypes(containerId) {
+    return d3.selectAll('#' + containerId + ' input[type=checkbox]')[0]
+        .filter(function(el) { return el.checked; })
+        .map(function(el) { return el.value; });
+}

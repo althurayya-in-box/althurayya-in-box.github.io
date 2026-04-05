@@ -1,53 +1,64 @@
-var prevSearchLabel;
+// The most recently highlighted marker from a search (used to restore its style)
+var lastSearchedMarker;
 
-function active_search(input) {
-    $(input).on('keyup', function() {
-        resetPaths();
-        var searchTerm = $(input).val().toUpperCase();
+/*
+ * Attach a live-search keyup listener to an input.
+ * Highlights matching markers in red and dims non-matching ones.
+ */
+function bindSearchInput(inputSelector) {
+    $(inputSelector).on('keyup', function() {
+        restoreRoutes();
+        var term = $(inputSelector).val().toUpperCase();
+
         Object.keys(markers).forEach(function(key) {
-            var searchTitle = marker_properties[key].searchTitle.toUpperCase();
-            var cornuURI = marker_properties[key].cornu_URI;
-            var arabicTitle = marker_properties[key].arabicTitle;
-            var markerSearchTitle = [searchTitle, cornuURI, arabicTitle].join('');
+            var haystack = [
+                placeProperties[key].searchTitle.toUpperCase(),
+                placeProperties[key].cornu_URI,
+                placeProperties[key].arabicTitle
+            ].join('');
 
-            if (searchTerm !== "" && searchTerm.length > 1) {
-                if (markerSearchTitle.indexOf(searchTerm) !== -1) {
-                    customMarkerStyle(markers[key], "red", 0.8);
-                    if (prevSearchLabel !== undefined) {
-                        customLabelStyle(prevSearchLabel, "black", "20px", false);
-                        customMarkerStyle(prevSearchLabel, prevSearchLabel.defaultOptions.color, 1);
+            if (term.length > 1) {
+                if (haystack.indexOf(term) !== -1) {
+                    setMarkerStyle(markers[key], 'red', 0.8);
+                    if (lastSearchedMarker !== undefined) {
+                        setLabelStyle(lastSearchedMarker, 'black', '20px', false);
+                        setMarkerStyle(lastSearchedMarker, lastSearchedMarker.defaultOptions.color, 1);
                     }
                     markers[key].setLabelNoHide(true);
-                    prevSearchLabel = markers[key];
+                    lastSearchedMarker = markers[key];
                 } else {
-                    customMarkerStyle(markers[key], markers[key].defaultOptions.color, 0.2);
+                    setMarkerStyle(markers[key], markers[key].defaultOptions.color, 0.2);
                 }
-            } else if (searchTerm === "") {
-                myzoom();
-                customMarkerStyle(markers[key], markers[key].defaultOptions.color, 1);
+            } else if (term === '') {
+                onZoomChange();
+                setMarkerStyle(markers[key], markers[key].defaultOptions.color, 1);
             }
         });
     });
 }
 
-function active_autocomp(input, auto_list, which_input, postprocess) {
-    $(input).autocomplete({
-        appendTo: which_input,
-        source: auto_list,
+/*
+ * Attach a jQuery UI autocomplete to an input, backed by the shared
+ * autocomplete list. `paneSelector` sets where the dropdown is appended.
+ * `onSelect` is called after the map pans to the selected marker.
+ */
+function bindAutocomplete(inputSelector, list, paneSelector, onSelect) {
+    $(inputSelector).autocomplete({
+        appendTo:  paneSelector,
+        source:    list,
         minLength: 4,
         select: function(e, ui) {
-            resetMarkers();
-            var selected = ui.item.value.toUpperCase();
-            var sel_splitted = selected.split(",");
-            var key = sel_splitted[sel_splitted.length - 1].trim();
-            customMarkerStyle(markers[key], "red", 0.8);
-            if (prevSearchLabel !== undefined)
-                customLabelStyle(prevSearchLabel, "black", "20px", false);
-            customLabelStyle(markers[key], "red", "24px", true);
-            prevSearchLabel = markers[key];
+            restoreMarkers();
+            var parts = ui.item.value.toUpperCase().split(',');
+            var key   = parts[parts.length - 1].trim();
+            setMarkerStyle(markers[key], 'red', 0.8);
+            if (lastSearchedMarker !== undefined)
+                setLabelStyle(lastSearchedMarker, 'black', '20px', false);
+            setLabelStyle(markers[key], 'red', '24px', true);
+            lastSearchedMarker = markers[key];
             map.panTo(markers[key].getLatLng());
             markers[key].bringToFront();
-            postprocess();
+            onSelect();
         }
     });
 }
