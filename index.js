@@ -17,13 +17,13 @@ L.mapbox.accessToken = 'pk.eyJ1IjoibWFzb3VtZWgiLCJhIjoiY2oxdnV0bDRiMDAxZTMzanN3e
 
 var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
     streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
-    googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+    googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
         maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3']
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }),
-    googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
+    googleTerrain = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
         maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3']
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
     }),
     watercolorlayer = new L.StamenTileLayer("watercolor");
 
@@ -103,6 +103,55 @@ function readJSONFile(file, callback) {
 }
 
 /*
+ * Load the bundled default dataset from the default_data/ folder.
+ */
+function loadDefaultData() {
+    var statusEl = document.getElementById('upload-status');
+    statusEl.textContent = 'Loading default data\u2026';
+    document.getElementById('loadDataBtn').disabled = true;
+    document.getElementById('loadDefaultBtn').disabled = true;
+
+    var files = {
+        regions: 'default_data/regions.json',
+        places:  'default_data/places_new_structure.geojson',
+        routes:  'default_data/routes.json'
+    };
+
+    var loaded = {};
+    var errors = [];
+    var keys = Object.keys(files);
+    var remaining = keys.length;
+
+    keys.forEach(function(name) {
+        fetch(files[name])
+            .then(function(res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + files[name]);
+                return res.json();
+            })
+            .then(function(data) {
+                loaded[name] = data;
+            })
+            .catch(function(err) {
+                errors.push(err.message);
+            })
+            .then(function() {
+                remaining--;
+                if (remaining > 0) return;
+                if (errors.length > 0) {
+                    statusEl.textContent = 'Error: ' + errors.join('; ');
+                    document.getElementById('loadDataBtn').disabled = false;
+                    document.getElementById('loadDefaultBtn').disabled = false;
+                    return;
+                }
+                statusEl.textContent = 'Initialising map\u2026';
+                resetMapState();
+                document.getElementById('upload-overlay').style.display = 'none';
+                initMap(loaded.regions, loaded.places, loaded.routes);
+            });
+    });
+}
+
+/*
  * Show the upload overlay (e.g. when user wants to load new data).
  */
 function showUploadOverlay() {
@@ -131,8 +180,9 @@ function loadUploadedData() {
     }
 
     var statusEl = document.getElementById('upload-status');
-    statusEl.textContent = 'Reading files…';
+    statusEl.textContent = 'Reading files\u2026';
     document.getElementById('loadDataBtn').disabled = true;
+    document.getElementById('loadDefaultBtn').disabled = true;
 
     var loaded = {};
     var errors = [];
@@ -147,6 +197,7 @@ function loadUploadedData() {
             if (errors.length > 0) {
                 statusEl.textContent = 'Error: ' + errors.join('; ');
                 document.getElementById('loadDataBtn').disabled = false;
+                document.getElementById('loadDefaultBtn').disabled = false;
                 return;
             }
             statusEl.textContent = 'Initialising map…';
@@ -205,11 +256,6 @@ function initMap(regionsData, placesData, routesData) {
 
     geojson = L.geoJson(placesData, {
         pointToLayer: function (feature, latlng) {
-            if (Object.keys(type_size).indexOf(
-                    feature.properties.althurayyaData.top_type) != -1) {
-                // type recognised
-            }
-
             if (regs[feature.properties.althurayyaData.region_URI] == undefined)
                 regs[feature.properties.althurayyaData.region_URI] = [];
             regs[feature.properties.althurayyaData.region_URI]
@@ -468,7 +514,7 @@ function findNetwork() {
         var multiplier = $("#multiSelect").val();
         var network = getNetwork(distances, multiplier);
         Object.keys(network).forEach(function(zone) {
-            zone_trim = zone.replace(/\D/g, '').trim();
+            var zone_trim = zone.replace(/\D/g, '').trim();
             network[zone].forEach(function(uri) {
                 if (map_zone_all_sites[uri] == undefined)
                     map_zone_all_sites[uri] = zone_trim;

@@ -60,7 +60,10 @@
             <label for="regionsFile">Regions (JSON):</label>
             <input type="file" id="regionsFile" accept=".json">
         </div>
-        <button id="loadDataBtn" onclick="loadUploadedData()">Load Data</button>
+        <div class="upload-actions">
+            <button id="loadDataBtn" onclick="loadUploadedData()">Load Data</button>
+            <button id="loadDefaultBtn" onclick="loadDefaultData()">Use Default Data</button>
+        </div>
         <p id="upload-status"></p>
     </div>
 </div>
@@ -119,7 +122,7 @@
                     <a id="encyIran" href="#">Encyclopaedia Iranica</a>
                 </li>
                 <li>
-                    <a id="pleides"href="#" >Pleiades</a>
+                    <a id="pleides" href="#">Pleiades</a>
                 </li>
                 <li>
                     <a id="wikipedia" href="#">Wikipedia</a>

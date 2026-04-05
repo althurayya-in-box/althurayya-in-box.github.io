@@ -222,24 +222,47 @@ input[type="button"] {
     font-size: 0.95rem;
 }
 
-#loadDataBtn {
+.upload-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
     margin-top: 1rem;
+}
+
+#loadDataBtn,
+#loadDefaultBtn {
     padding: 0.6rem 1.4rem;
     font-size: 1rem;
     font-family: 'Baskerville', 'Brill', 'Georgia', serif;
-    background: #333;
-    color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+
+#loadDataBtn {
+    background: #333;
+    color: #fff;
 }
 
 #loadDataBtn:hover {
     background: #555;
 }
 
-#loadDataBtn:disabled {
+#loadDefaultBtn {
+    background: #e7e7e7;
+    color: #333;
+    border: 1px solid #bbb;
+}
+
+#loadDefaultBtn:hover {
+    background: #d0d0d0;
+}
+
+#loadDataBtn:disabled,
+#loadDefaultBtn:disabled {
     background: #999;
+    color: #fff;
+    border-color: transparent;
     cursor: not-allowed;
 }
 
